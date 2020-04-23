@@ -8,15 +8,14 @@
 
 #import packages
 import numpy as np
-from scipy.fftpack import fft, ifft
 import matplotlib.pyplot as plt
-from spectrum import *
-import scipy.io
+from scipy.fftpack import fft
+import scipy.io as sio
 import os
 
 
 ## Load simulated signal
-data = scipy.io.loadmat(os.getcwd()+ '/sig_pek_for_warp.mat')
+data = sio.loadmat(os.getcwd()+ '/sig_pek_for_warp.mat')
 #print(data.keys())
 '''
 # s_t: propagated modes in a Pekeris waveguide with parameters
@@ -41,35 +40,35 @@ xlim_plots=[6.5,7.5]
 ## Short Fourier Transform computation
 
 def tfrstft(x, t, N, N_window):
-    h = np.hamming(N_window);
-    h = h[:, np.newaxis];
+    h = np.hamming(N_window)
+    h = h[:, np.newaxis]
 
-    (xrow, xcol) = np.shape(x);
+    (xrow, xcol) = np.shape(x)
 
     ## Lines added by Bonnel
     if ((xcol != 1)):
-        x = np.transpose(x);
-        (xrow, xcol) = np.shape(x);
+        x = np.transpose(x)
+        (xrow, xcol) = np.shape(x)
     ## end of Bonnel's addition
 
-    hlength = np.floor(NFFT / 4);
-    hlength = hlength + 1 - np.remainder(hlength, 2);
-    trace = 0;
-    (trow, tcol) = np.shape(t);
-    (hrow, hcol) = np.shape(h);
-    Lh = (hrow - 1) / 2;
-    h = h / np.linalg.norm(h);
-    tfr_2 = np.zeros((NFFT, tcol));
+    hlength = np.floor(NFFT / 4)
+    hlength = hlength + 1 - np.remainder(hlength, 2)
+    trace = 0
+    (trow, tcol) = np.shape(t)
+    (hrow, hcol) = np.shape(h)
+    Lh = (hrow - 1) / 2
+    h = h / np.linalg.norm(h)
+    tfr_2 = np.zeros((NFFT, tcol))
 
     for icol in range(tcol):
-        ti = t[0, icol];
-        tau = np.arange(-np.min([np.round(N / 2) - 1, Lh, ti - 1]), np.min([np.round(N / 2) - 1, Lh, xrow - ti]) + 1);
-        indices = np.remainder(N + tau, N) + 1;
-        indices = indices.astype(int);
-        a = np.array(Lh + 1 + tau, dtype='int');
-        b = np.array(ti + tau, dtype='int');
-        c = x[b - 1, :] * np.conj(h[a - 1]);
-        tfr_2[indices - 1, icol] = c[:, 0];
+        ti = t[0, icol]
+        tau = np.arange(-np.min([np.round(N / 2) - 1, Lh, ti - 1]), np.min([np.round(N / 2) - 1, Lh, xrow - ti]) + 1)
+        indices = np.remainder(N + tau, N) + 1
+        indices = indices.astype(int)
+        a = np.array(Lh + 1 + tau, dtype='int')
+        b = np.array(ti + tau, dtype='int')
+        c = x[b - 1, :] * np.conj(h[a - 1])
+        tfr_2[indices - 1, icol] = c[:, 0]
 
     tfr = fft(tfr_2, axis=0)
 
@@ -79,25 +78,25 @@ def tfrstft(x, t, N, N_window):
 ## Compute time-frequency representation
 
 # Signal length
-N=np.size(s_t);
+N=np.size(s_t)
 
 # Short Time Fourier Transform parameters
-vec_t=np.arange(0,N,1); vec_t = vec_t[np.newaxis,:]; # time samples where the STFT will be computed (i.e. positions of the sliding window)
+vec_t=np.arange(0,N,1); vec_t = vec_t[np.newaxis,:] # time samples where the STFT will be computed (i.e. positions of the sliding window)
 
-NFFT=2048; # FFT size
-N_window=31; # sliding window size (need an odd number)
+NFFT=2048 # FFT size
+N_window=31 # sliding window size (need an odd number)
 
 
 #STFT computation
 
-tfr=tfrstft(s_t,vec_t,NFFT,N_window);
+tfr=tfrstft(s_t,vec_t,NFFT,N_window)
 
 # Spectrogram ~ modulus STFT
-spectro=abs(tfr)**2;
+spectro=abs(tfr)**2
 
 # Time and frequency axis
-time=np.arange(0,N)/fs;
-freq=np.arange(0,NFFT)*fs/NFFT;
+time=np.arange(0,N)/fs
+freq=np.arange(0,NFFT)*fs/NFFT
 
 
 
@@ -152,7 +151,7 @@ print('(for coding reason, please use odd numbers only)')
 
 while ((N_window != 999)):
     print('Input window length and press enter for spectrogram computation : ')
-    N_window = int(input('(window length 0 to exit the code) '));
+    N_window = int(input('(window length 0 to exit the code) '))
 
     if ((N_window == 0) or (N_window == 999)):
         print('  ')
@@ -161,9 +160,9 @@ while ((N_window != 999)):
 
     if ((N_window != 999)):
         # STFT computation
-        tfr = tfrstft(s_t, vec_t, NFFT, N_window);
+        tfr = tfrstft(s_t, vec_t, NFFT, N_window)
         # Spectrogram ~ modulus STFT
-        spectro = abs(tfr) ** 2;
+        spectro = abs(tfr) ** 2
         plt.figure(figsize=(9.0,7.0))
         plt.pcolormesh(time[0, :], freq[0, :], spectro)
         plt.ylim([0, fs / 2])
@@ -172,7 +171,7 @@ while ((N_window != 999)):
         plt.ylabel('Frequency (Hz)')
         plt.title('Spectrogram N_window: '+ str(N_window))
         plt.show()
-        continue
+        
 
 
 
