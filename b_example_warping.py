@@ -88,7 +88,7 @@ N_window=31 # you need a short window to see the modes
 
 b=np.arange(1,N_ok+1)
 b=b[np.newaxis,:]
-tfr=tfrstft(s_ok,b,NFFT,N_window)
+tfr,t,f=tfrstft(s_ok,b,NFFT,N_window)
 spectro=abs(tfr)**2
 
 # Figure
@@ -108,7 +108,7 @@ wind=np.hamming(N_window_w);
 wind=wind/np.linalg.norm(wind);
 t=np.arange(1,M+1)
 t=t[np.newaxis,:]
-tfr_w=tfrstft(s_w,t,NFFT,N_window_w);
+tfr_w,t_w,f_w=tfrstft(s_w,t,NFFT,N_window_w);
 
 spectro_w=abs(tfr_w)**2;
 
