@@ -45,7 +45,7 @@ xlim_plots=[6.5,7.5]
 N=np.size(s_t)
 
 # Short Time Fourier Transform parameters
-vec_t=np.arange(0,N,1); vec_t = vec_t[np.newaxis,:] # time samples where the STFT will be computed (i.e. positions of the sliding window)
+vec_t=np.arange(1,N+1); vec_t = vec_t[np.newaxis,:] # time samples where the STFT will be computed (i.e. positions of the sliding window)
 
 NFFT=2048 # FFT size
 N_window=31 # sliding window size (need an odd number)
@@ -53,7 +53,7 @@ N_window=31 # sliding window size (need an odd number)
 
 #STFT computation
 
-tfr=tfrstft(s_t,vec_t,NFFT,N_window)
+tfr,t,f=tfrstft(s_t,vec_t,NFFT,N_window)
 
 # Spectrogram ~ modulus STFT
 spectro=abs(tfr)**2
@@ -74,7 +74,8 @@ plt.grid()
 
 print('The code has loaded a signal propagated in a Pekeris waveguide')
 print('and shows the time series')
-print('Press any key to continue and see the spectrogram')
+input('Press ENTER to continue and see the spectrogram')
+
 
 plt.pause(0.5)
 
@@ -99,7 +100,7 @@ print('segments of length Nw. Another important parameter for spectrogram comput
 print('overlap. In this tutorial, the overlap between segment is Nw-1 samples, which is ')
 print('the maximum overlap that one can obtain : the percentage of overlap is 100*(Nw-1)/Nw')
 print('Such a high overlap will be handy for modal filtering')
-print('Press any key to continue')
+input('Press ENTER to continue...')
 plt.pause(0.5)
 
 
@@ -125,7 +126,7 @@ while ((N_window != 999)):
 
     if ((N_window != 999)):
         # STFT computation
-        tfr = tfrstft(s_t, vec_t, NFFT, N_window)
+        tfr,t,f = tfrstft(s_t, vec_t, NFFT, N_window)
         # Spectrogram ~ modulus STFT
         spectro = abs(tfr) ** 2
         plt.figure(figsize=(9.0,7.0))
