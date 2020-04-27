@@ -4,14 +4,16 @@
 ##April 2020
 
 ##THIS CODE IS TO LOCALIZE FM SOURCES
-#matplotlib inline
+
 
 #import packages
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft
 import scipy.io as sio
-import os
+import os as os
+from time import sleep
+from tfrstft import tfrstft
 
 
 ## Load simulated signal
@@ -36,44 +38,6 @@ fs=data['fs']
 ### defines the bounds on the x-axis for all the plots
 '''
 xlim_plots=[6.5,7.5]
-
-## Short Fourier Transform computation
-
-def tfrstft(x, t, N, N_window):
-    h = np.hamming(N_window)
-    h = h[:, np.newaxis]
-
-    (xrow, xcol) = np.shape(x)
-
-    ## Lines added by Bonnel
-    if ((xcol != 1)):
-        x = np.transpose(x)
-        (xrow, xcol) = np.shape(x)
-    ## end of Bonnel's addition
-
-    hlength = np.floor(NFFT / 4)
-    hlength = hlength + 1 - np.remainder(hlength, 2)
-    trace = 0
-    (trow, tcol) = np.shape(t)
-    (hrow, hcol) = np.shape(h)
-    Lh = (hrow - 1) / 2
-    h = h / np.linalg.norm(h)
-    tfr_2 = np.zeros((NFFT, tcol))
-
-    for icol in range(tcol):
-        ti = t[0, icol]
-        tau = np.arange(-np.min([np.round(N / 2) - 1, Lh, ti - 1]), np.min([np.round(N / 2) - 1, Lh, xrow - ti]) + 1)
-        indices = np.remainder(N + tau, N) + 1
-        indices = indices.astype(int)
-        a = np.array(Lh + 1 + tau, dtype='int')
-        b = np.array(ti + tau, dtype='int')
-        c = x[b - 1, :] * np.conj(h[a - 1])
-        tfr_2[indices - 1, icol] = c[:, 0]
-
-    tfr = fft(tfr_2, axis=0)
-
-    return tfr
-
 
 ## Compute time-frequency representation
 
@@ -152,6 +116,7 @@ print('(for coding reason, please use odd numbers only)')
 while ((N_window != 999)):
     print('Input window length and press enter for spectrogram computation : ')
     N_window = int(input('(window length 0 to exit the code) '))
+    sleep(30)
 
     if ((N_window == 0) or (N_window == 999)):
         print('  ')
