@@ -26,10 +26,7 @@ def warp_temp_exa(s, fs, r, c):
     fs_w: sampling frequency of the warped signal
 
     '''
-    '''
-    if (np.ndim(s)>=2):
-        s=np.transpose(s)   
-        '''
+
 
     ## Step 1: preliminary computations
     s = np.real(s)
@@ -53,7 +50,6 @@ def warp_temp_exa(s, fs, r, c):
     ## Step 5: warped signal computation
 
     # Warped time axis, uniform sampling
-    # t_w=np.arange(0,M-1)/fs_w · matlab version I think
     t_w = np.arange(0, M) / fs_w
 
     # Warped time axis, non-uniform sampling (starts from r/c)
@@ -69,7 +65,7 @@ def warp_temp_exa(s, fs, r, c):
     aux1 = np.tile(a, (1, N))  # size=(M,1) -> repmat(1,N)
     b = tmin + np.arange(0, N) / fs
     aux2 = np.tile(b, (int(M), 1))  # size=(1,N) -> repmat(M,1)
-    aux = np.sinc(fs * (aux1 - aux2));  # size=(M,N)
+    aux = np.sinc(fs * (aux1 - aux2))  # size=(M,N)
     # end of exact interpolation --> interpolated signal is sum(s_aux.*aux,2)
 
     # Final warped signal
@@ -123,7 +119,7 @@ def iwarp_temp_exa(s_w, fs_w, r, c, fs, N):
     a = np.conj(t_iw).T
     aux1 = np.tile(a, (1, M))
     aux2 = np.tile((np.arange(0, M)) / fs_w, (N, 1))
-    aux = np.sinc(fs_w * (aux1 - aux2));
+    aux = np.sinc(fs_w * (aux1 - aux2))
     # end of exact interpolation --> interpolated signal is sum(s_aux.*aux,2)
 
     # Final warped signal
