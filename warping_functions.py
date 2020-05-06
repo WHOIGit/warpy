@@ -1,5 +1,15 @@
 
+########## WARPING FUNCTIONS ##################
+
 import numpy as np
+import matplotlib.pyplot as plt
+
+#This scrip contains the following functions:
+#warp_temp_exa
+#iwarp_temp_exa
+#warp_t
+#iwarp_t
+
 ##################### Function warp_temp_exa ##################
 def warp_temp_exa(s, fs, r, c):
     '''
