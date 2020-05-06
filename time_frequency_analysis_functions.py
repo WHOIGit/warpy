@@ -15,19 +15,18 @@ from numpy.linalg import inv
 
 ######################Function tfrstft ############################
 
-def tfrstft (x=np.array([[1]]),t=np.array([[False]]),N=False,h=np.array([[False]]),trace=0):
+def tfrstft (x=np.array([[1]]),t=np.array([[False]]),N=False,h=np.array([[False]])):
     '''
     TFRSTFT Short time Fourier transform.
-    [TFR,T,F]=TFRSTFT(X,T,N,H,TRACE) computes the short-time Fourier 
+    [TFR,T,F]=TFRSTFT(X,T,N,H) computes the short-time Fourier
     transform of a discrete-time signal X. 
 
     X     : signal.
     T     : time instant(s)          (default : 1:length(X)).
     N     : number of frequency bins (default : length(X)).
     H     : frequency smoothing window, H being normalized so as to
-            be  of unit energy.      (default : Hamming(N/4)). 
-    TRACE : if nonzero, the progression of the algorithm is shown
-                                     (default : 0).
+            be  of unit energy.      (default : Hamming(N/4)).
+
     TFR   : time-frequency decomposition (complex values). The
            frequency axis is graduated from -0.5 to 0.5.
     F     : vector of normalized frequencies.
