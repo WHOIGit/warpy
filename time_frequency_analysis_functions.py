@@ -121,7 +121,7 @@ def tfrstft (x=np.array([[1]]),t=np.array([[False]]),N=False,h=np.array([[False]
     
     h = h / np.linalg.norm(h)
 
-    tfr = np.zeros((N, tcol))
+    tfr = np.zeros((N, tcol), dtype = "complex_")
           
     for icol in range(tcol):
         ti = t[0, icol];
@@ -130,7 +130,7 @@ def tfrstft (x=np.array([[1]]),t=np.array([[False]]),N=False,h=np.array([[False]
         a = np.array(Lh + 1 + tau, dtype='int')
         b = np.array(ti + tau, dtype='int')
         c = x[b - 1, :] * np.conj(h[a - 1])
-        tfr[indices - 1, icol] = c[:, 0]
+        tfr[indices - 1, icol] = np.squeeze(c)
 
     tfr = fft(tfr, axis=0)
         
