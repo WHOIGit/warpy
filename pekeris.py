@@ -1,9 +1,9 @@
 #### Warping tutorial
+
 #### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 #### May 2020
 
-
-## PEKERIS init FUNCTIONS
+## PEKERIS FUNCTIONS
 
 #This scrip contains the following functions 
 #pek_kr_f
