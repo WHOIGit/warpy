@@ -1,32 +1,29 @@
 # Warping tutorial
 ## D_playing_with_time_origin
 
-#### May 2020
-#### Eva Chamorro Garrido
+##### May 2020
+###### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 
-## Import packages
+#--------------------------------------------------------------------------------------
+## 1. Import packages
+
 import os
 import matplotlib
-matplotlib.use('TkAgg')
-#% matplotlib inline ## activate in jupyter notebook
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import interactive
+from matplotlib import cm
+matplotlib.use('TkAgg')
 import scipy.io as sio
+from scipy.signal import hilbert
 from warping_functions import *
 from time_frequency_analysis_functions import *
-from roipoly import RoiPoly
-from scipy.signal import hilbert
+from filter import *
 
-## Load simulated signal
+#--------------------------------------------------------------------------------------
+## 2. Load simulated signal
 
 data = sio.loadmat(os.getcwd() + '/sig_pek_for_warp.mat')
-
-s_t = data['s_t']
-fs = data['fs']
-s_t_dec = data['s_t_dec']
-r = data['r']
-c1 = data['c1']
 
 '''
     s_t: propagated modes in a Pekeris waveguide with parameters
@@ -41,7 +38,24 @@ c1 = data['c1']
      NB: one can run optional_create_simulated_signal.m to generate another
      simulated signal
 '''
+
+# Select variables
+s_t = data['s_t']
+fs = data['fs']
+s_t_dec = data['s_t_dec']
+r = data['r']
+c1 = data['c1']
+
+### IF YOU CHANGE RANGE, you must change the following variable which
+### defines the bounds on the x-axis for all the plots
+
 xlim_plots = [6.5, 7.5]
+
+
+
+#--------------------------------------------------------------------------------------
+## 3. Plot spectrogram and time origin selection
+
 N = len(s_t[0, :])
 NFFT = 2048  # FFT size
 N_window = 31  # sliding window size (need an odd number)
@@ -49,6 +63,8 @@ N_window = 31  # sliding window size (need an odd number)
 redo_dt = 0
 
 while redo_dt == 0:
+    plt.close('all')
+
     a = np.arange(1, N + 1)
     a = a[np.newaxis, :]
     d = np.hamming(N_window)
@@ -59,13 +75,14 @@ while redo_dt == 0:
     time = np.arange(0, N) / fs
     freq = np.arange(0, NFFT) * fs / NFFT
 
+
     print('This is the spectrogram of a signal propagated in a Pekeris waveguide')
     print('In this code, you will choose the time origin for warping')
-    print('Click once on the spectrogram at the position where you want to define the time origin')
+    print('Double-click once on the spectrogram at the position where you want to define the time origin')
 
-    #% matplotlib qt ## activate in jupyter notebook
+
     plt.figure()
-    plt.pcolormesh(time[0, :], freq[0, :], spectro)
+    plt.imshow(spectro, extent=[time[0, 0], time[0, -1], freq[0, 0], freq[0, -1]], aspect='auto')
     plt.ylim([0, fs / 2])
     plt.xlim(xlim_plots)
     plt.xlabel('Time (sec)')
@@ -75,6 +92,8 @@ while redo_dt == 0:
 
     interactive(True)
     t_dec = plt.ginput(1)
+    print('\n' * 30)
+    input('Pres ENTER to continue and plot the result')
     t_dec = t_dec[0]
     t_dec = t_dec[0]
 
@@ -120,11 +139,16 @@ while redo_dt == 0:
     time_w = np.arange(0, (M) / fs_w, 1 / fs_w)
     freq_w = np.arange(0, fs_w - fs_w / NFFT + fs_w / NFFT, fs_w / NFFT)
 
+    print('\n' * 30)
+    print('The left panel shows the spectrogram of the original ')
+    print('signal with the chosen time origin')
+    print('The right panel shows the corresponding warped signal')
+    print('Close the figure to continue')
+
     # Figure
-    #% matplotlib inline ## activate in jupyter notebook
-    plt.figure(figsize=(10.0, 8.0))
+    plt.figure(figsize=(8, 6))
     plt.subplot(121)
-    plt.pcolormesh(time_ok[0, :], freq[0, :], spectro)
+    plt.imshow(spectro, extent=[time_ok[0, 0], time_ok[0, -1], freq[0, 0], freq[0, -1]], aspect='auto')
     plt.ylim([0, fs / 2])
     # plt.xlim([0, 0.5])  ### Adjust this to see better
     plt.xlabel('Time (sec)')
@@ -133,16 +157,14 @@ while redo_dt == 0:
 
     # Figure
     plt.subplot(122)
-    plt.pcolormesh(time_w, freq_w, spectro_w)
+    plt.imshow(spectro_w, extent=[time_w[0], time_w[-1], freq_w[0], freq_w[-1]], aspect='auto')
     plt.ylim([0, 40])  ### Adjust this to see better
     plt.xlabel('Warped time (sec)')
     plt.ylabel('Corresponding warped frequency (Hz)')
     plt.title('Corresponding warped signal')
-    plt.show()
+    plt.show(block=True)
 
-    print('The left panel shows the spectrogram of the original ')
-    print('signal with the chosen time origin')
-    print('The right panel shows the corresponding warped signal')
+    print('\n' * 30)
     print('Type 0 if you want to redo the time origin selection')
     redo_dt = input('or type 1 if you want to proceed with modal filtering ')
 
@@ -152,131 +174,178 @@ while redo_dt == 0:
     elif redo_dt == '0':
         redo_dt = int(redo_dt)
 
+
+
+
+#--------------------------------------------------------------------------------------
+## 6. Filtering
+
 ## selection the spectro_w part to mask
+spectro_w_1=spectro_w[0:400,:]
+spectro_w_1=np.transpose(spectro_w_1)
+time_w_1=time_w
+freq_w_1=freq_w[:400]
 
-spectro_w_1 = spectro_w[0:400, :]
-Nmode = 4
-modes = np.zeros((N_ok, Nmode))
-tm = np.zeros((NFFT, Nmode))
 
-#% matplotlib qt ## activate in jupyter notebook
 
-# Figure
-plt.figure(figsize=(10, 10))
-plt.imshow(spectro_w_1)
-plt.ylim([0, 400])
-plt.xlabel('Warped time (sec)')
-plt.ylabel('Corresponding warped frequency (Hz)')
-plt.title('Filter Mode 1')
-plt.show(block=False)
+# To make it easier, filtering will be done by hand using the pyqtgraph ROI tool.
+# See pyqtgraph help for more information
 
-## Filtering
-# To make it easier, filtering will be done by hand using the roipoly tool.
-# See python help for more information
-
-print('Now try to filter the 4 modes');
+print('\n' * 30)
+print('Now try to filter the 4 modes')
 print('Create the four masks sequentially, starting with mode 1, then 2, etc.')
+print('To do so, move the vertices in the image until you are ok with the mask. You can add a new vertice with a click on the blue lines')
+print('Once you are ok with the mask shape of one mode, close the image window to continue filtering')
 print('(if needed, go back to c_warping_and_filtering.m for mask creation)')
-input('Press ENTER to filter mode 1')
+print('Look at Fig. 11 in the paper for a mask shape suggestion')
+print('(you can enlarge the figure or make it full screen before creating the mask)')
 
-plt.close('all')
+Nmodes=4
+modes=np.zeros((N_ok,Nmodes))
+tm=np.zeros((NFFT,Nmodes))
 
-color = ['r', 'b', 'g', 'yellow']
 
-for i in range(Nmode):
-    plt.figure(figsize=(10, 10))
-    plt.imshow(spectro_w_1)
-    plt.ylim([0, 400])
-    plt.xlabel('Warped time (sec)')
-    plt.ylabel('Corresponding warped frequency (Hz)')
-    plt.title('Filter Mode ' + str(i + 1))
-    plt.show(block=False)
 
-    # Let user draw ROI
-    interactive(True)
-    roi1 = RoiPoly(color=color[i])
+def pol(arr):
 
-    if i <= 2:
-        input('Press ENTER to filter mode' + str(i + 2))
-    else:
-        input('Press ENTER to continue')
+    ## create GUI
+    app = QtGui.QApplication([])
+    w = pg.GraphicsWindow(size=(1000, 800), border=True)
+    w.setWindowTitle('pyqtgraph: Filtering')
 
-    ## Filtering
+    text = """Filtering: Now try to filter the 4 modes .<br>\n
+    Create the four masks sequentially, starting with mode 1, then 2, etc.<br>\n
+    To do so, move the vertices in the image until you are ok with the mask.<br>\n
+    You can add a new point by clicking on the blue lines.<br>\n
+    Once you are ok with the mask shape, close the image window to continue filtering.<br> \n
+    Be careful not to get out of the image """
 
-    # create the mask of roi1
-    mask = roi1.get_mask(spectro_w_1)
-    masque_1 = np.double(mask)
+
+    w1 = w.addLayout(row=0, col=0)
+    label1 = w1.addLabel(text, row=0, col=0)
+    v1a = w1.addViewBox(row=1, col=0, lockAspect=True)
+    img1a = pg.ImageItem(arr)
+
+    # Get the colormap
+    colormap = cm.get_cmap("viridis")  # cm.get_cmap("CMRmap")
+    colormap._init()
+    lut = (colormap._lut * 255).view(np.ndarray)  # Convert matplotlib colormap from 0-1 to 0 -255 for Qt
+
+    # Apply the colormap
+    img1a.setLookupTable(lut)
+
+    v1a.addItem(img1a)
+
+    v1a.disableAutoRange('xy')
+
+    v1a.autoRange()
+
+    rois = []
+
+    rois.append(pg.PolyLineROI([[80, 60], [90, 30], [60, 40]], pen=(6, 9), closed=True))
+
+    def update(roi):
+        roi.getArrayRegion(arr, img1a)
+
+    for roi in rois:
+        roi.sigRegionChanged.connect(update)
+        v1a.addItem(roi)
+
+    ## Start Qt event loop unless running in interactive mode or using pyside.
+    if __name__ == '__main__':
+        import sys
+
+        if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+            QtGui.QApplication.instance().exec_()
+
+    mask = roi.getArrayRegion(arr, img1a)
+    pts = roi.getState()['points']
+
+    return mask, pts
+
+
+print('Filtering mode 1')
+for i in range (Nmodes):
+
+    # Create the mask
+    mask, pts = pol(spectro_w_1)
+    final_mask = maskc(mask, pts, spectro_w_1)
+    mask_ini = np.transpose(final_mask)
 
     # add the part masked to the total sprectogram array
     masque_2 = np.zeros_like(spectro_w[400:, :])
-    masque = np.concatenate((masque_1, masque_2), axis=0)
+    masque = np.concatenate((mask_ini, masque_2), axis=0)
 
+    # Note that the mask is applied on the STFT (not on the spectrogram)
     mode_rtf_warp = masque * tfr_w
     norm = 1 / NFFT / np.max(wind)
     mode_temp_warp = np.real(np.sum(mode_rtf_warp, axis=0)) * norm * 2
+
+    # The modes are actually real quantities, so that they have negative frequencies.
+    # Because we do not filter negative frequencies, we need to multiply by 2
+    # the positive frequencies we have filter in order to recover the correct
+    # modal energy
     mode = iwarp_temp_exa(mode_temp_warp, fs_w, r, c1, fs, N_ok)
     modes[:, i] = mode[:, 0]
 
-    ## Verification
 
-    a = hilbert(modes[:, i])
-    a = a[:, np.newaxis]
+    ## Verification
+    a = hilbert(mode)
     b = np.arange(1, N_ok + 1)
     b = b[np.newaxis, :]
-    d = np.hamming(N_window)
-    d = d[:, np.newaxis]
-    mode_stft = tfrstft(a, b, NFFT, d)
+    h = np.hamming(N_window)
+    h = h[:, np.newaxis]
+    mode_stft = tfrstft(a, b, NFFT, h)
     mode_spectro = abs(mode_stft) ** 2
-    tm_a = tm[:, i]
-    tm_a = tm_a[:, np.newaxis]
-    tm_a, D2 = momftfr(mode_spectro, 0, N_ok, time_ok)
-    tm[:, i] = tm_a[:, 0]
+    tm_1, D2 = momftfr(mode_spectro, 0, N_ok, time_ok)
+    tm[:, i] = tm_1[:, 0]
+    if i < Nmodes:
+        print('Filtering mode '+ str(i+2))
 
-#% matplotlib inline ## activate in jupyter notebook
 
-plt.figure()
-plt.pcolormesh(time_ok[0, :], freq[0, :], spectro)
-plt.ylim([0, fs / 2])
+
+print('End of filtering')
+
+
+
+
+
+#--------------------------------------------------------------------------------------
+## 7. Verification
+print('\n' * 30)
+print('The red lines are the estimated dispersion curves.')
+print(' ')
+print('Close the figure to continue to look at your result vs the true modes')
+
+plt.figure(figsize=[7,5])
+plt.imshow(spectro, extent=[time_ok[0,0], time_ok[0,-1], freq[0,0], freq[0,-1]],aspect='auto',origin='low')
+plt.ylim([0,fs/2])
 plt.xlabel('Time (sec)')
 plt.ylabel('Frequency (Hz)')
 plt.title('Spectrogram and estimated dispersion curve')
-plt.plot(tm[:, 0], freq[0, :], 'r')
-plt.plot(tm[:, 1], freq[0, :], 'r')
-plt.plot(tm[:, 2], freq[0, :], 'r')
-plt.plot(tm[:, 3], freq[0, :], 'r')
-plt.show()
+plt.plot(tm[:,0],freq[0, :],'r')
+plt.plot(tm[:,1],freq[0, :],'r')
+plt.plot(tm[:,2],freq[0, :],'r')
+plt.plot(tm[:,3],freq[0, :],'r')
+plt.show(block='True')
 
-print('The red lines are the estimated dispersion curves.')
-input('Press ENTER to continue')
 
-## Last verification
 
-data = sio.loadmat(os.getcwd() + '/sig_pek_and_modes_for_warp.mat')
-r = data['r']
-vg = data['vg']
-c1 = data['c1']
-f_vg = data['f_vg']
+
+
+#--------------------------------------------------------------------------------------
+## 8. Last verification
+
+data = sio.loadmat(os.getcwd()+ '/sig_pek_and_modes_for_warp.mat')
+r=data['r']
+vg=data['vg']
+c1=data['c1']
+f_vg=data['f_vg']
+
 
 ### creation of the theoretical dispersion curves
-tm_theo = r / vg - r / c1  ### range over group_speed minus correction for time origin
-
-plt.figure()
-plt.pcolormesh(time_ok[0, :], freq[0, :], spectro)
-plt.ylim([0, fs / 2])
-plt.xlim([0, 0.74])
-plt.xlabel('Time (sec)')
-plt.ylabel('Frequency (Hz)')
-plt.title('Spectrogram and estimated dispersion curve')
-plt.plot(tm_theo[0, :], f_vg[0, :], 'black')
-plt.plot(tm_theo[1, :], f_vg[0, :], 'black')
-plt.plot(tm_theo[2, :], f_vg[0, :], 'black')
-plt.plot(tm_theo[3, :], f_vg[0, :], 'black')
-plt.plot(tm[:, 0], freq[0, :], 'r')
-plt.plot(tm[:, 1], freq[0, :], 'r')
-plt.plot(tm[:, 2], freq[0, :], 'r')
-plt.plot(tm[:, 3], freq[0, :], 'r')
-plt.show()
-
+tm_theo=r/vg-t_dec ### range over group_speed minus correction for time origin
+print('\n' * 30)
 print('This is the same figure than before, except that the true dispersion curves are now in black.')
 print('How well did you do?')
 print(' ')
@@ -289,5 +358,28 @@ print('For practical applications, you will need to restrict dispersion curves t
 print('where they are ok. This will be covered in the script g_filtering_multiple_modes_for_loc.')
 print(' ')
 print('Try to rerun the code and change the time origin to overly late/early value and see what it does.')
+print(' ')
+
+
+
+plt.figure(figsize=[7,5])
+plt.imshow(spectro, extent=[time_ok[0,0], time_ok[0,-1], freq[0,0], freq[0,-1]],aspect='auto',origin='low')
+plt.ylim([0,fs/2])
+plt.xlim([0,0.74])
+plt.xlabel('Time (sec)')
+plt.ylabel('Frequency (Hz)')
+plt.title('Spectrogram and estimated dispersion curve')
+plt.plot(tm_theo[0,:], f_vg[0,:], 'black')
+plt.plot(tm_theo[1,:], f_vg[0,:], 'black')
+plt.plot(tm_theo[2,:], f_vg[0,:], 'black')
+plt.plot(tm_theo[3,:], f_vg[0,:], 'black')
+plt.plot(tm[:,0],freq[0, :],'r')
+plt.plot(tm[:,1],freq[0, :],'r')
+plt.plot(tm[:,2],freq[0, :],'r')
+plt.plot(tm[:,3],freq[0, :],'r')
+plt.show()
+
+
+
 print(' ')
 print('END')

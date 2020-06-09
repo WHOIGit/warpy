@@ -8,8 +8,6 @@
 ### Import packages
 import os
 import matplotlib
-matplotlib.use('TkAgg')
-#% matplotlib inline ## activate in jupyter notebook
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.io as sio
@@ -64,27 +62,19 @@ freq = np.arange(0, NFFT) * fs / NFFT
 
 ### Plots
 
-plt.figure(figsize=(9.0, 7.0))
+print('The code has loaded a signal propagated in a Pekeris waveguide')
+print('and shows the time series')
+print('Close the figure to continue and see the spectrogram')
+
+plt.figure()
 plt.plot(time[0, :], s_t[0, :])
 plt.xlim(xlim_plots)
 plt.xlabel('Time (sec)')
 plt.ylabel('Amplitude (A.U.)')
 plt.title('Signal in the time domain')
 plt.grid()
-plt.show()
+plt.show(block=True)
 
-print('The code has loaded a signal propagated in a Pekeris waveguide')
-print('and shows the time series')
-input('Press ENTER to continue and see the spectrogram')
-
-plt.figure(figsize=(9.0, 7.0))
-plt.pcolormesh(time[0, :], freq[0, :], spectro)
-plt.xlim(xlim_plots)
-plt.ylim([0, fs / 2])
-plt.xlabel('Time (sec)')
-plt.ylabel('Frequency (Hz)')
-plt.title('Spectrogram')
-plt.show()
 
 print('This is the spectrogram, computed with a sliding window ')
 print('of length Nw=31 samples (or 0.15 s , since the sampling frequency is 200 Hz')
@@ -93,8 +83,19 @@ print('segments of length Nw. Another important parameter for spectrogram comput
 print('overlap. In this tutorial, the overlap between segment is Nw-1 samples, which is ')
 print('the maximum overlap that one can obtain : the percentage of overlap is 100*(Nw-1)/Nw')
 print('Such a high overlap will be handy for modal filtering')
-input('Press ENTER to continue')
+print('Close the figure to continue')
 
+plt.figure()
+plt.pcolormesh(time[0, :], freq[0, :], spectro)
+plt.xlim(xlim_plots)
+plt.ylim([0, fs / 2])
+plt.xlabel('Time (sec)')
+plt.ylabel('Frequency (Hz)')
+plt.title('Spectrogram')
+plt.show(block=True)
+
+
+print('\n' * 100)
 print('Now you can modify the window length')
 print('Remember to give it in number of samples')
 print('Number between 11 and 71 are reasonable tries')
@@ -116,11 +117,12 @@ while ((N_window != 999)):
         tfr = tfrstft(s_t, vec_t, NFFT, d)
         # Spectrogram ~ modulus STFT
         spectro = abs(tfr) ** 2
-        plt.figure(figsize=(9.0, 7.0))
+        plt.figure()
+        print('Close the figure to continue')
         plt.pcolormesh(time[0, :], freq[0, :], spectro)
         plt.ylim([0, fs / 2])
         plt.xlim(xlim_plots)
         plt.xlabel('Time (sec)')
         plt.ylabel('Frequency (Hz)')
         plt.title('Spectrogram N_window: ' + str(N_window))
-        plt.show()
+        plt.show(block=True)
