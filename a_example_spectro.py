@@ -11,7 +11,7 @@ import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.io as sio
-from time_frequency_analysis_functions import *
+from functions.time_frequency_analysis_functions import *
 
 ### Load simulated signal
 data = sio.loadmat(os.getcwd() + '/sig_pek_for_warp.mat')

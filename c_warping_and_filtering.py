@@ -10,20 +10,15 @@
 
 import os
 import matplotlib
-import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
-import numpy as np
 import scipy.io as sio
-from matplotlib import interactive
-from matplotlib import cm
 from scipy.signal import hilbert
-from warping_functions import *
-from time_frequency_analysis_functions import *
-from filter import *
+from functions.warping_functions import *
+from functions.time_frequency_analysis_functions import *
+from functions.filter import *
 
 import warnings
 warnings.filterwarnings('ignore')
-
 
 
 #--------------------------------------------------------------------------------------

@@ -8,17 +8,16 @@
 
 import os
 import matplotlib
-import matplotlib.pyplot as plt
+
 matplotlib.use('TkAgg')
-import numpy as np
 import scipy.io as sio
 from matplotlib import interactive
 from scipy import interpolate
-from scipy.fftpack import fft, ifft
+from scipy.fftpack import ifft
 from scipy.signal import hilbert
-from warping_functions import *
-from time_frequency_analysis_functions import *
-from filter import *
+from functions.warping_functions import *
+from functions.time_frequency_analysis_functions import *
+from functions.filter import *
 
 
 
@@ -521,7 +520,7 @@ for i in range(Nmode):
 
     plt.plot(tm_est_with_source[:,i],freq[0,:], linewidth=2, color='r')
 
-plt.show()
+plt.show(block=True)
 
 print(' ')
 print('END')

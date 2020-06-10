@@ -9,17 +9,14 @@
 
 import os
 import matplotlib
-import numpy as np
 import scipy.io as sio
-import matplotlib.pyplot as plt
+
 matplotlib.use('TkAgg')
-from matplotlib import interactive
 from scipy import interpolate
-from scipy.fftpack import fft, ifft
 from scipy.signal import hilbert
-from warping_functions import *
-from time_frequency_analysis_functions import *
-from filter import *
+from functions.warping_functions import *
+from functions.time_frequency_analysis_functions import *
+from functions.filter import *
 
 #--------------------------------------------------------------------------------------
 ## 2. Load simulated signal

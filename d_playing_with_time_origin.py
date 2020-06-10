@@ -9,16 +9,14 @@
 
 import os
 import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib import interactive
-from matplotlib import cm
+
 matplotlib.use('TkAgg')
 import scipy.io as sio
 from scipy.signal import hilbert
-from warping_functions import *
-from time_frequency_analysis_functions import *
-from filter import *
+from functions.warping_functions import *
+from functions.time_frequency_analysis_functions import *
+from functions.filter import *
 
 #--------------------------------------------------------------------------------------
 ## 2. Load simulated signal
@@ -377,7 +375,7 @@ plt.plot(tm[:,0],freq[0, :],'r')
 plt.plot(tm[:,1],freq[0, :],'r')
 plt.plot(tm[:,2],freq[0, :],'r')
 plt.plot(tm[:,3],freq[0, :],'r')
-plt.show()
+plt.show(block=True)
 
 
 

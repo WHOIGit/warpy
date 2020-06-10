@@ -8,18 +8,15 @@
 ## 1. Import packages
 import os
 import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import interactive
-from matplotlib import cm
+
 matplotlib.use('TkAgg')
 import scipy.io as sio
 from scipy.signal import hilbert
 from scipy import interpolate
-from scipy.fftpack import fft, ifft
-from warping_functions import *
-from time_frequency_analysis_functions import *
-from filter import *
+from scipy.fftpack import ifft
+from functions.warping_functions import *
+from functions.time_frequency_analysis_functions import *
+from functions.filter import *
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -455,7 +452,7 @@ plt.plot(tm_theo_with_source[1,:], f_vg[0,:], 'black')
 plt.plot(tm_theo_with_source[2,:], f_vg[0,:], 'black')
 plt.plot(tm_theo_with_source[3,:], f_vg[0,:], 'black')
 plt.plot(tm_est_with_source,freq[0,:], linewidth=3, color='r')
-plt.show()
+plt.show(block=True)
 
 
 

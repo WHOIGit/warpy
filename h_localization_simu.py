@@ -14,10 +14,10 @@ import numpy as np
 import cmath
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
-from warping_functions import *
-from time_frequency_analysis_functions import *
-from pekeris import *
-from hamilton import *
+from functions.warping_functions import *
+from functions.time_frequency_analysis_functions import *
+from functions.pekeris import *
+from functions.hamilton import *
 
 import warnings
 warnings.filterwarnings('ignore')
