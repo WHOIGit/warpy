@@ -5,7 +5,7 @@
 
 ## PEKERIS init FUNCTIONS
 
-#This scrip contains the following functions 
+#This scrip contains the following subroutines
 #pek_init
 #pek_green 
 

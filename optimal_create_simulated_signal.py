@@ -1,24 +1,19 @@
-## Warping tutorial
-#### optional_create_simulated_signal
+# Warping tutorial
+# optional_create_simulated_signal
 
-##### April 2020
-###### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
+# April 2020
+# Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 
+#--------------------------------------------------------------------------------------
 ## 1. Import packages
-
-import os as os
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.io as sio
-from scipy.fftpack import fft, ifft,irfft
-from functions.time_frequency_analysis_functions import *
-from functions.pekeris import *
-from functions.pekeris_init import *
-from functions.hamilton import *
+from scipy.fftpack import ifft
+from subroutines.pekeris import *
 import warnings
 warnings.filterwarnings('ignore')
 
-
+#--------------------------------------------------------------------------------------
 ## 2. Environment
 
 # Waveguide parameters
@@ -41,10 +36,10 @@ if nfft != np.floor(nfft):
 freq_env = np.arange(0, fmax + df, df)  ### freq axis to simulate propagation
 freq_sig = np.arange(0, nfft) * df  ### freq axis for simulated signal, obtained after Fourier synthesis
 
-### Compute wavenumbers and normalization coefficients
+# Compute wavenumbers and normalization coefficients
 [kr, kz, A2] = pek_init(rho1, rho2, c1, c2, D, freq_env)
 
-#### Compute Green's function
+# Compute Green's function
 zs = D  # source depth (m) - single source only (only one value)
 zr = np.arange(0, D + 1)  # receiver depths (m) - can be a vertical array (vector)
 zr = zr[np.newaxis, :]
@@ -52,6 +47,7 @@ zr = zr[np.newaxis, :]
 # Green's function (frequency domain), dimension [Nb freq , Nb capt]
 g = pek_green(kr, kz, A2, zs, zr, r)
 
+#--------------------------------------------------------------------------------------
 ## 3. Build signal at a given depth
 
 z_sig=D
@@ -60,18 +56,18 @@ s_f=np.zeros(len(freq_sig),'complex')
 s_f[0:len(freq_env)]=g[:,ind_z]
 
 
-## Go to time domain
+# Go to time domain
 s_f=s_f[np.newaxis,:]
 s_t=np.real(ifft(s_f))#symetric
 norm_s_t=np.max(np.abs(s_t))
 s_t=s_t/norm_s_t
 
-### Time shift the signal by r/c1
+# Time shift the signal by r/c1
 t_dec=r/c1
 i=complex(0,1)
 s_f_dec=s_f*np.exp(2*1*i*np.pi*freq_sig*t_dec)
 
-### Go to time domain
+# Go to time domain
 s_t_dec=ifft(s_f_dec) # 'symmetric'
 
 norm_s_t=np.max(np.abs(s_t_dec))
@@ -83,6 +79,7 @@ sio.savemat('sig_pek_for_warp.mat',{'s_t': s_t, 's_t_dec': s_t_dec,'rho1':rho1,'
                         'c1':c1,'c2':c2,' D': D,'fs':fs,'r':r,'zs':zs,'zr':zr })
 
 
+#--------------------------------------------------------------------------------------
 ## 4. Separated modes
 
 

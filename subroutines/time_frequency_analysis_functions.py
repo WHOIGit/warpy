@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.fftpack import fft
 from numpy.linalg import inv
 
-#This scrip contains the following functions 
+#This scrip contains the following subroutines
 #fmodany
 #fmlin
 #fmpar
@@ -66,6 +66,28 @@ def tfrstft (x=np.array([[1]]),t=np.array([[False]]),N=False,h=np.array([[False]
      identified using comments.
      
     '''
+
+    # Adjust inputs dimensions
+
+    if x.ndim !=2:
+        if x.ndim ==1:
+            x=x[np.newaxis,:]
+        else:
+            raise ValueError ('x dimension is not valid ')
+
+    if t.ndim !=2:
+        if t.ndim == 1:
+            t = t[np.newaxis, :]
+        else:
+            raise ValueError('t dimension is not valid ')
+
+    if h.ndim !=2:
+        if h.ndim == 1:
+            h = h[:,np.newaxis]
+        else:
+            raise ValueError('h dimension is not valid ')
+
+
     
     (xrow,xcol)=np.shape(x)
     

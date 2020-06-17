@@ -1,8 +1,8 @@
 # Warping tutorial
-## h_localization_simu
+# h_localization_simu
 
-##### May 2020
-###### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
+# May 2020
+# Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 
 
 #--------------------------------------------------------------------------------------
@@ -14,14 +14,15 @@ import numpy as np
 import cmath
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
-from functions.warping_functions import *
-from functions.time_frequency_analysis_functions import *
-from functions.pekeris import *
-from functions.hamilton import *
+from subroutines.warping_functions import *
+from subroutines.time_frequency_analysis_functions import *
+from subroutines.pekeris import *
+from subroutines.hamilton import *
 
 import warnings
 warnings.filterwarnings('ignore')
 
+'NOTE: This code has to be run in the Terminal'
 
 #--------------------------------------------------------------------------------------
 ## 2. Load data
@@ -46,18 +47,17 @@ print('the previous code (g_warping_filtering_multiple_modes.m)')
 print('They will be used as data for localization')
 print('')
 
-print('Close the figure to continue')
 
 plt.figure()
-plt.plot(data[:,0], freq_data[0,:],'black')
-plt.plot(data[:,1], freq_data[0,:],'black')
-plt.plot(data[:,2], freq_data[0,:],'black')
-plt.plot(data[:,3], freq_data[0,:],'black')
+for i in range(Nm):
+    plt.plot(data[:,i], freq_data[0,:],'black')
+
 plt.xlabel('Time (sec)')
 plt.ylabel('Frequency (Hz)')
 plt.grid()
 plt.title('Dispersion curves')
-plt.show(block='True')
+plt.show(block=False)
+input('Pres ENTER to continue ')
 
 #--------------------------------------------------------------------------------------
 ## 3. Compute replicas
@@ -73,8 +73,8 @@ r_ = np.arange(5000, 15100, 100)
 c2_ = np.arange(1550, 1710, 10)
 dt_ = np.arange(-7, -5.995, 0.005)
 
-### NB: dt values should be roughly between rmin/c1 and rmax/c1. One can start with wide
-###    search bounds and coarse steps for dt, and gradually narrow the bounds and decrease the steps.
+# NB: dt values should be roughly between rmin/c1 and rmax/c1. One can start with wide
+#    search bounds and coarse steps for dt, and gradually narrow the bounds and decrease the steps.
 
 Nr = len(r_)
 Nc = len(c2_)
@@ -102,7 +102,6 @@ print('Replicas computed!')
 input('Press ENTER to continue')
 
 #--------------------------------------------------------------------------------------
-
 ## 4. Localization: impulsive sources
 print('\n' * 20)
 print('First, let us localize the source with Eq. (19),')
@@ -146,7 +145,7 @@ print('True values are: range ' + str(r_true[0, 0]) + ' m ; time shift ' + str(d
 input('Press ENTER to plot results')
 
 
-## 4.1 Plot results
+# 4.1 Plot results
 
 rep_est=r_est/np.squeeze(vg[cc_m,:,:])+dt_est
 
@@ -158,20 +157,16 @@ print(' ')
 print('The bottom panel of the figure shows least square fit for range')
 print('If the curve is not relatively smooth with a marked minimum, then')
 print('the localization is likely wrong.')
-print('Close the figure to continue')
 
 
 plt.figure()
 plt.subplot(211)
-plt.plot(data[:,0], freq_data[0,:],'black')
-plt.plot(data[:,1], freq_data[0,:],'black')
-plt.plot(data[:,2], freq_data[0,:],'black')
-plt.plot(data[:,3], freq_data[0,:],'black')
+for i in range(Nm):
 
-plt.plot(rep_est[0,:], freq_data[0,:],'or',fillstyle='none')
-plt.plot(rep_est[1,:], freq_data[0,:],'or',fillstyle='none')
-plt.plot(rep_est[2,:], freq_data[0,:],'or',fillstyle='none')
-plt.plot(rep_est[3,:], freq_data[0,:],'or',fillstyle='none')
+    plt.plot(data[:,i], freq_data[0,:],'black')
+
+    plt.plot(rep_est[i,:], freq_data[0,:],'or',fillstyle='none')
+
 plt.xlabel('Time (sec)')
 plt.ylabel('Frequency (Hz)')
 plt.title('Dispersion curves')
@@ -182,13 +177,13 @@ plt.grid()
 plt.xlabel('Range (km)')
 plt.title('Least square fit')
 
-plt.show(block='True')
+plt.show(block=False)
+input('Pres ENTER to continue')
 
 #--------------------------------------------------------------------------------------
-
 ## 5. Localization: non-impulsive sources
 
-## Localization: non-impulsive sources
+# Localization: non-impulsive sources
 print('\n' * 20)
 print('Now, let us localize the source with Eq. (20),')
 print('i.e. we do not know if the source is an impulse')
@@ -198,7 +193,7 @@ print('')
 Nm_inv = 4
 J = np.zeros((Nr, Nc, Nm_inv - 1))
 
-## we need common frequencies between modes. Let us verify the data
+# we need common frequencies between modes. Let us verify the data
 flag_data = 0
 for mm in np.arange(0, Nm_inv - 1):
 
@@ -235,7 +230,7 @@ else:  ## there are common frequencies and we can proceed
                 else:
                     J[rr, cc, mm] = np.nansum(np.nansum(np.abs(data_ok - rep) ** 2)) / N
 
-### sum over modes
+# sum over modes
 J_ok = np.sum(J, axis=2)
 
 v = np.nanmin(J_ok[:, :])
@@ -254,7 +249,7 @@ print('True values are: range ' + str(r_true[0, 0]) + ' m ; speed ' + str(c2_tru
 input('Press ENTER to plot results')
 
 
-## 5.1 Plot results
+# 5.1 Plot results
 
 print('\n' * 20)
 print('The top panel of the figure shows the data (in black) and the best replicas')
@@ -286,7 +281,8 @@ plt.plot(r_ / 1000, np.squeeze(J_ok[:, cc_m]))
 plt.grid()
 plt.xlabel('Range (km)')
 plt.title('Least square fit')
-plt.show(block='True')
+plt.show(block=False)
+input('Pres ENTER to continue and exit the code')
 
 
 #--------------------------------------------------------------------------------------

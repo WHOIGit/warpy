@@ -1,8 +1,8 @@
-## Warping tutorial
-#### C_warping_and_filtering
+# Warping tutorial
+# C_warping_and_filtering
 
-##### April 2020
-###### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
+# April 2020
+# Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 
 
 #----------------------------------------------------------------------
@@ -10,15 +10,32 @@
 
 import os
 import matplotlib
-matplotlib.use('TkAgg')
 import scipy.io as sio
 from scipy.signal import hilbert
-from functions.warping_functions import *
-from functions.time_frequency_analysis_functions import *
-from functions.filter import *
+from subroutines.warping_functions import *
+from subroutines.time_frequency_analysis_functions import *
+from subroutines.filter import *
 
 import warnings
 warnings.filterwarnings('ignore')
+
+'''
+Select the environment where you want to run the code (Python Console or Terminal).
+To activate select 1, to deactivate select 0 
+Both environment cannot be activated at the same time
+If you are using the Python Console you will have to close the figures to continue running the code 
+
+We recommend to run the code in the Terminal, this way you can see all the results (figures) you don't have 
+to close the figures
+
+'''
+
+PythonConsole=0
+Terminal=1
+
+
+if PythonConsole == Terminal:
+    raise ValueError ('Both environment cannot be activated/deactivated at the same time')
 
 
 #--------------------------------------------------------------------------------------
@@ -64,22 +81,17 @@ time=np.arange(0,N_ok)/fs
 [s_w, fs_w]=warp_temp_exa(s_ok,fs,r,c1)
 M=len(s_w)
 
-
-
-
 #--------------------------------------------------------------------------------------
 ## 4. Time frequency representations
 
-### 4.1 Original signal
+# 4.1 Original signal
 
-### Original signal
+# Original signal
 # STFT computation
 NFFT=1024
 N_window=31 ### you need a short window to see the modes
 b=np.arange(1,N_ok+1)
-b=b[np.newaxis,:]
 d=np.hamming(N_window)
-d=d[:,np.newaxis]
 tfr=tfrstft(s_ok,b,NFFT,d)
 spectro=abs(tfr)**2
 
@@ -88,39 +100,45 @@ spectro=abs(tfr)**2
 print('\n' * 30)
 print('This is the spectrogram of the received signal')
 print('We will now warp it')
-print('Close the figure to continue and proceed with warping')
 
 freq=(np.arange(0,NFFT))*fs/NFFT
 
-plt.figure()
+fig= plt.figure()
 plt.imshow(spectro, extent=[time[0,0], time[0,-1], freq[0,0], freq[0,-1]],aspect='auto',origin='low')
 plt.ylim([0, fs/2])
 plt.xlim([0, 0.5])  ### Adjust this to see better
 plt.xlabel('Time (sec)')
 plt.ylabel('Frequency (Hz)')
 plt.title('Original signal')
-plt.show(block=True)
+
+if PythonConsole:
+    print('Close the figure to proceed with warping')
+    plt.show(block=True)
+    #plt.ion()
+
+if Terminal:
+    plt.show(block=False)
+    input('Press ENTER to proceed with warping')
 
 
-### 4.2 Warped signal
+
+## 4.2 Warped signal
 
 # STFT computation
 
 N_window_w=301 # You need a long window to see the warped modes
 wind=np.hamming(N_window_w)
 wind=wind/np.linalg.norm(wind)
-wind=wind[:,np.newaxis]
 t=np.arange(1,M+1)
-t=t[np.newaxis,:]
 tfr_w=tfrstft(s_w,t,NFFT,wind)
 spectro_w=abs(tfr_w)**2
 
-## Time and Frequency axis of the warped signal
+# Time and Frequency axis of the warped signal
 time_w=np.arange(0,(M)/fs_w,1/fs_w)
 freq_w=np.arange(0,NFFT)*fs/NFFT
 
 
-## selection the spectro_w part to mask
+# selection the spectro_w part to mask
 spectro_w_1=spectro_w[0:200,:]
 spectro_w_1=np.transpose(spectro_w_1)
 
@@ -136,9 +154,15 @@ plt.ylim([0,40])
 plt.xlabel('Warped time (sec)')
 plt.ylabel('Corresponding warped frequency (Hz)')
 plt.title('Warped signal')
-plt.show(block=True)
 
+if PythonConsole:
+    print('Close the figure to continue to filtering')
+    plt.show(block=True)
+    #plt.ion()
 
+if Terminal:
+    plt.show(block=False)
+    input('Press ENTER to continue to filtering')
 
 
 
@@ -154,12 +178,12 @@ print('Once you are ok with the mask shape, close the image window')
 print('Look at Fig. 11 in the paper for a mask shape suggestion')
 
 
-##### WARNING "IF I DELETE THE FUNCTION pol FROM THE SCRIPT IS NOT WORKING CORRECTLY" ######
-####### func ########
+# WARNING "IF I DELETE THE FUNCTION pol FROM THE SCRIPT IS NOT WORKING CORRECTLY" ######
+    # func ########
 
 def pol(arr):
 
-    ## create GUI
+    # create GUI
     app = QtGui.QApplication([])
     w = pg.GraphicsWindow(size=(1000, 800), border=True)
     w.setWindowTitle('pyqtgraph : Filtering')
@@ -201,7 +225,7 @@ def pol(arr):
         roi.sigRegionChanged.connect(update)
         v1a.addItem(roi)
 
-    ## Start Qt event loop unless running in interactive mode or using pyside.
+    # Start Qt event loop unless running in interactive mode or using pyside.
     if __name__ == '__main__':
         import sys
 
@@ -249,10 +273,7 @@ print('Close the figure to continue and proceed with verification')
 
 a=hilbert(mode)
 b=np.arange(1,N_ok+1)
-b=b[np.newaxis,:]
 d=np.hamming(N_window)
-d=d[:,np.newaxis]
-
 mode_stft=tfrstft(a,b,NFFT,d)
 mode_spectro=abs(mode_stft)**2
 tm,D2=momftfr(mode_spectro,0,N_ok,time)
@@ -266,7 +287,7 @@ print('...')
 print('If the result is not satisfying, you must create a new filtering mask')
 print('If the result is ok, you can try another mode!')
 print('')
-print('Close the figure to continue to look at your result vs the true modes')
+
 
 
 plt.figure()
@@ -276,8 +297,16 @@ plt.xlabel('Time (sec)')
 plt.ylabel('Frequency (Hz)')
 plt.title('Spectrogram and estimated dispersion curve')
 plt.plot(tm[:,0],freq[0, :],'r')
-plt.show(block=True)
 
+if PythonConsole:
+    print('Close the figure to continue to look at your result vs the true modes')
+    plt.show(block=True)
+    # plt.ion()
+    # input('Press ENTER to continue')
+
+if Terminal:
+    plt.show(block=False)
+    input('Press ENTER to continue to look at your result vs the true modes')
 
 
 
@@ -291,7 +320,7 @@ c1=data['c1']
 f_vg=data['f_vg']
 
 
-### creation of the theoretical dispersion curves
+# creation of the theoretical dispersion curves
 tm_theo=r/vg-r/c1 ### range over group_speed minus correction for time origin
 
 print('\n' * 30)
@@ -315,9 +344,20 @@ plt.plot(tm_theo[1,:], f_vg[0,:], 'black')
 plt.plot(tm_theo[2,:], f_vg[0,:], 'black')
 plt.plot(tm_theo[3,:], f_vg[0,:], 'black')
 plt.plot(tm[:,0],freq[0, :],'red')
-print('Close the figure to exit the code')
 
-plt.show(block=True)
+
+if PythonConsole:
+    print('Close the figure to exit the code')
+    plt.show(block=True)
+    # plt.ion()
+    # input('Press ENTER to continue')
+
+if Terminal:
+    plt.show(block=False)
+    input('Press ENTER to exit the code')
+
+
 
 print(' ')
 print('END')
+

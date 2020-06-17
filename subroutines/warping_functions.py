@@ -4,7 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-#This scrip contains the following functions:
+#This scrip contains the following subroutines:
 #warp_temp_exa
 #iwarp_temp_exa
 #warp_t
@@ -26,6 +26,12 @@ def warp_temp_exa(s, fs, r, c):
     fs_w: sampling frequency of the warped signal
 
     '''
+
+    if s.ndim != 2:
+        if s.ndim == 1:
+            s = s[np.newaxis, :]
+        else:
+            raise ValueError('s dimension is not valid ')
 
 
     ## Step 1: preliminary computations

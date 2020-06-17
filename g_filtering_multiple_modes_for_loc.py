@@ -1,8 +1,8 @@
 # Warping tutorial
-## g_filtering_multiples_modes_for_loc
+# g_filtering_multiples_modes_for_loc
 
-##### May 2020
-###### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
+#May 2020
+# Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 
 #--------------------------------------------------------------------------------------
 ## 1. Import packages
@@ -10,13 +10,13 @@
 import os
 import matplotlib
 import scipy.io as sio
-
-matplotlib.use('TkAgg')
 from scipy import interpolate
 from scipy.signal import hilbert
-from functions.warping_functions import *
-from functions.time_frequency_analysis_functions import *
-from functions.filter import *
+from subroutines.warping_functions import *
+from subroutines.time_frequency_analysis_functions import *
+from subroutines.filter import *
+
+'NOTE: This code has to be run in the Terminal'
 
 #--------------------------------------------------------------------------------------
 ## 2. Load simulated signal
@@ -69,26 +69,24 @@ M=len(s_w)
 
 ## 4. Time frequency representations
 
-### 4.1 Original signal
+# 4.1 Original signal
 
 # STFT computation
 
 NFFT=1024
 N_window=31 # you need a short window to see the modes
 b=np.arange(1,N_ok+1)
-b=b[np.newaxis,:]
 h=np.hamming(N_window)
-h=h[:,np.newaxis]
 
 tfr=tfrstft(s_ok,b,NFFT,h)
 spectro=abs(tfr)**2
 
-#Figure
+# Figure
 freq=np.arange(0,NFFT)*fs/NFFT
 
 print('This is the spectrogram of the received signal')
 print('We will now warp it')
-print('Close the figure to warp it')
+
 
 plt.figure()
 plt.imshow(spectro, extent=[time[0,0], time[0,-1], freq[0,0], freq[0,-1]],aspect='auto', origin='low')
@@ -97,19 +95,18 @@ plt.xlim([0,0.5])  ### Adjust this to see better
 plt.xlabel('Time (sec)')
 plt.ylabel('Frequency (Hz)')
 plt.title('Source signal')
-plt.show(block='True')
+plt.show(block=False)
+input('Pres ENTER to continue to warp it')
 
 
 
-### 4.2 Warped signal
+# 4.2 Warped signal
 
 # STFT computation
 N_window_w = 301  # You need a long window to see the warped modes
 wind = np.hamming(N_window_w)
 wind = wind / np.linalg.norm(wind)
-wind = wind[:, np.newaxis]
 b = np.arange(1, M + 1)
-b = b[np.newaxis, :]
 tfr_w = tfrstft(s_w, b, NFFT, wind)
 spectro_w = abs(tfr_w) ** 2
 
@@ -119,7 +116,6 @@ freq_w = np.arange(0, fs_w - fs_w / NFFT + fs_w / NFFT, fs_w / NFFT)
 
 print('\n' * 30)
 print('This is the spectrogram of the warped signal')
-print('Close the figure to continue to filtering')
 print('')
 
 # Figure
@@ -129,11 +125,11 @@ plt.ylim([0, 40])  ### Adjust this to see better
 plt.xlabel('Warped time (sec)')
 plt.ylabel('Corresponding warped frequency (Hz)')
 plt.title('Warped signal')
-plt.show(block='True')
+plt.show(block=False)
+input('Pres ENTER to continue to filtering')
 
 
 #--------------------------------------------------------------------------------------
-
 ## 5. Filtering
 
 # To make it easier, filtering will be done by hand using bbox_select.
@@ -154,7 +150,7 @@ print('(if needed, go back to c_warping_and_filtering.m for mask creation)')
 
 def pol(arr):
 
-    ## create GUI
+    # create GUI
     app = QtGui.QApplication([])
     w = pg.GraphicsWindow(size=(1000, 800), border=True)
     w.setWindowTitle('pyqtgraph : Filtering')
@@ -196,7 +192,7 @@ def pol(arr):
         roi.sigRegionChanged.connect(update)
         v1a.addItem(roi)
 
-    ## Start Qt event loop unless running in interactive mode or using pyside.
+    # Start Qt event loop unless running in interactive mode or using pyside.
     if __name__ == '__main__':
         import sys
 
@@ -234,13 +230,11 @@ for i in range (Nmode):
     mode = iwarp_temp_exa(mode_temp_warp, fs_w, r, c1, fs, N_ok)
     modes[:, i] = mode[:, 0]
 
-    ## Verification
+    # Verification
 
     a = hilbert(mode)
     b = np.arange(1, N_ok + 1)
-    b = b[np.newaxis, :]
     h = np.hamming(N_window)
-    h = h[:, np.newaxis]
     mode_stft = tfrstft(a, b, NFFT, h)
     mode_spectro = abs(mode_stft) ** 2
     tm_1, D2 = momftfr(mode_spectro, 0, N_ok, time)
@@ -259,7 +253,7 @@ print('The red lines are the estimated dispersion curves.')
 print('Now let us restrict them to a frequency band where they are ok')
 print('You will have to enter the min/max frequency for each dispersion curves')
 print('(for every mode, choose the widest frequency band over which the dispersion curve estimation looks correct)')
-print('Close the figure to continue to select the frequency band')
+
 
 plt.figure()
 plt.imshow(spectro, extent=[time[0,0], time[0,-1], freq[0,0], freq[0,-1]],aspect='auto',origin='low')
@@ -270,7 +264,9 @@ plt.title('Spectrogram and estimated dispersion curves')
 for i in range(Nmode):
     plt.plot(tm[:,i],freq[0, :],'r')
 
-plt.show(block=True)
+
+plt.show(block=False)
+input('Pres ENTER to continue to select the frequency band')
 
 #--------------------------------------------------------------------------------------
 ## 7. Restrict to frequency band of interest
@@ -303,7 +299,9 @@ plt.title('Spectrogram and estimated dispersion curves')
 for i in range(Nmode):
     plt.plot(tm_ok[:, i], freq[0, :], 'r')
 
-plt.show()
+
+plt.show(block=False)
+input('Pres ENTER to continue and exit the code')
 
 r_true = r
 c1_true = c1
@@ -312,13 +310,13 @@ rho1_true = rho1
 rho2_true = rho2
 D_true = D
 
-### let's introduce a small random time shift, as if source and receiver
-### were not synchronized
+# let's introduce a small random time shift, as if source and receiver
+# were not synchronized
 
 dt_true = np.random.rand(1) * 0.06 - 0.03
 tm_for_inv = tm_ok + dt_true
 
-### let's save the tm_for_inv on a relevant frequency axis
+# let's save the tm_for_inv on a relevant frequency axis
 
 fmin_data = min(fmin)
 fmax_data = max(fmax)
@@ -332,11 +330,11 @@ for i in range(Nmode):
     f = interpolate.interp1d(freq[0, :], tm_for_inv[:, i], bounds_error=False, fill_value=np.nan)
     data[:, i] = f(freq_data)
 
-sio.savemat('save.mat', {'r_true': r_true, 'c1_true': c1_true, 'c2_true': c2_true, 'rho1_true': rho1_true,
+sio.savemat('data_for_loc.mat', {'r_true': r_true, 'c1_true': c1_true, 'c2_true': c2_true, 'rho1_true': rho1_true,
                          'rho2_true': rho2_true, 'D_true': D_true, 'freq_data': freq_data, 'data': data,
                          'dt_true': dt_true})
 
-rint(' ')
+print(' ')
 print('Your result is saved. If you are happy with it, ')
 print('Proceed to the next code for source localization.')
 print(' ')
