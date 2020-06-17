@@ -1,43 +1,61 @@
-## Warping tutorial
-#### a_look_at_data, upsweep
+# Warping tutorial
+# a_look_at_data, upsweep
 
-##### April 2020
-###### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
+# April 2020
+# Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 
+#--------------------------------------------------------------------------------------
 ## 1. Import packages
 
 import os
-os.chdir("/Users/evachamorro/PycharmProjects/WHOI")
-#**Put here the directory where you have the file with your function**
+import sys
 import wave
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.io as sio
 import scipy.io.wavfile as siw
 import scipy.signal as sig
-from ipywidgets import interact_manual
+sys.path.insert(0, os.path.dirname(os.getcwd())+'/subroutines') #**Put here the directory where you have the file with your function**
 from warping_functions import *
 from time_frequency_analysis_functions import *
 
 import warnings
 warnings.filterwarnings('ignore')
 
-os.chdir('/Users/evachamorro/PycharmProjects/WHOI/b_fm_upsweep')
-##**Put here the directory where you were working**
+'''
+Select the environment where you want to run the code (Python Console or Terminal).
+To activate select 1, to deactivate select 0 
+Both environment cannot be activated at the same time
+If you are using the Python Console you will have to close the figures to continue running the code 
 
+We recommend to run the code in the Terminal, this way you can see all the results (figures) you don't have 
+to close the figures
+
+'''
+
+PythonConsole=0
+Terminal=1
+
+if Terminal:
+    matplotlib.use("TkAgg")
+
+if PythonConsole == Terminal:
+    raise ValueError ('Both environment cannot be activated/deactivated at the same time')
+
+
+
+#--------------------------------------------------------------------------------------
 ## 2. Load and decimate
 
-##### Option to plot spectrogram in dB vs linear scale
+# Option to plot spectrogram in dB vs linear scale
 plot_in_dB = 1  ### 1 to plot in dB, or 0 to plot in linear scale
 
-##### Parameters for computing/plotting the spectrograms
+# Parameters for computing/plotting the spectrograms
 # These should be good default values for the gunshot provided in this tutorial
 # You will likely have to change them for other data
 NFFT = 2048  ### fft size for all spectrogram computation
 
-## Load and decimate
-
+print('\n' * 20)
 print('Select a wav file with the signal you want to analyze')
 print(
     'Ideally, you have created this wav file yourself using any audio/bioacoustics software, and you know its content')
@@ -81,20 +99,16 @@ fs = fs0 / subsamp
 
 del fs0, y0
 
-
+#--------------------------------------------------------------------------------------
 ## 3. Figure
 
-## Figure
 freq = np.arange(0, NFFT + 2) * fs / NFFT
 time = np.arange(0, Ns) / fs
 
 N_window = 71
-a = s[np.newaxis, :]
 b = np.arange(1, Ns + 1)
-b = b[np.newaxis, :]
 h = np.hamming(N_window)
-h = h[:, np.newaxis]
-tfr = tfrstft(a, b, NFFT, h)
+tfr = tfrstft(s, b, NFFT, h)
 
 if plot_in_dB == 1:
     spectro = 20 * np.log10((abs(tfr)))
@@ -106,17 +120,25 @@ else:
 
 print('\n' * 20)
 print('This is the spectrogram, computed with a sliding window of length 71 samples')
-print('Close the figure to continue to modify the window length')
 
 plt.ylim([0, fs / 2])
 plt.xlabel('Time [s]')
 plt.ylabel('Frequency [Hz]')
 plt.title('Spectrogram')
-plt.show(block='True')
+
+if PythonConsole:
+    print('Close the figure to continue and modify the window length')
+    plt.show(block=True)
+    # plt.ion()
+    # input('Press ENTER to continue')
+
+if Terminal:
+    plt.get_current_fig_manager().window.wm_geometry("600x400+0+0")
+    plt.show(block=False)
+    input('Press ENTER to continue and modify the window length')
 
 
-
-
+#--------------------------------------------------------------------------------------
 ## 4. Modify the window length
 
 
@@ -135,19 +157,14 @@ while ((N_window != 0)):
     if  N_window != 0:
         # STFT computation
         h = np.hamming(N_window)
-        h = h[:, np.newaxis]
-        tfr = tfrstft(a, b, NFFT, h)
+        tfr = tfrstft(s, b, NFFT, h)
 
         # Spectrogram ~ modulus STFT
         spectro = abs(tfr) ** 2
 
-        print('Close the figure to introduce a new window size')
         plt.figure()
-
-
         if plot_in_dB == 1:
-            s = 10 * np.log10(spectro)
-            plt.imshow(s, extent=[time[0], time[-1], freq[0], freq[-1]], aspect='auto', origin='low')
+            plt.imshow(10 * np.log10(spectro), extent=[time[0], time[-1], freq[0], freq[-1]], aspect='auto', origin='low')
         else:
             s = spectro
             plt.imshow(s, extent=[time[0], time[-1], freq[0], freq[-1]], aspect='auto', origin='low')
@@ -156,9 +173,16 @@ while ((N_window != 0)):
         plt.xlabel('Time (sec)')
         plt.ylabel('Frequency (Hz)')
         plt.title('Spectrogram N_window: ' + str(N_window))
-        plt.show(block='True')
+        if PythonConsole:
+            print('Close the figure to continue to modify the window length or exit the code')
+            plt.show(block=True)
+            # plt.ion()
+            # input('Press ENTER to continue')
 
-
+        if Terminal:
+            plt.get_current_fig_manager().window.wm_geometry("600x400+800+0")
+            plt.show(block=False)
+            input('Pres ENTER to continue to modify the window length or exit the code')
 
 print(['As a reminder, you chose a decimation rate N=' + str(subsamp)])
 print('Remember this number for the next script')

@@ -7,14 +7,7 @@
 ## 1. Import packages
 
 import os
-#os.chdir('')
-#**Put here the directory where you have the file with your function**
-
-import wave
-import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-matplotlib.use('TkAgg')
+import sys
 import scipy.io.wavfile as siw
 import scipy.signal as sig
 import scipy.io as sio
@@ -22,36 +15,37 @@ from matplotlib import interactive
 from scipy.signal import hilbert
 from scipy import interpolate
 from datetime import date
+sys.path.insert(0, os.path.dirname(os.getcwd())+'/subroutines')
+#**Put here the directory where you have the file with your function**
 from warping_functions import *
 from time_frequency_analysis_functions import *
 from filter import *
 
-#import warnings
-#warnings.filterwarnings('ignore')
-
-#os.chdir('')
-##**Put here the directory where you were working**
+import warnings
+warnings.filterwarnings('ignore')
 
 
-## 2. Load and decimate
+'NOTE: This code has to be run in the Terminal'
 
-##### Option to plot spectrogram in dB vs linear scale
+#--------------------------------------------------------------------------------------
+# 2. Load and decimate
+
+# Option to plot spectrogram in dB vs linear scale
 plot_in_dB = 0  ### 1 to plot in dB, or 0 to plot in linear scale
 
-##### Parameters for computing/plotting the spectrograms
+# Parameters for computing/plotting the spectrograms
 # These should be good default values for the gunshot provided in this tutorial
 # You will likely have to change them for other data
 NFFT = 2048  ### fft size for all spectrogram computation
 N_window_w = 401  ###length of the sliding window for the spectrogram of the warped signal
 fmax_plot = 90  ### max frequency for the plot of the spectrogram of the warped signal
 
-#### Parameters for warping
+# Parameters for warping
 # You can keep these default value or change them if you have reasons to know better
 r = 10000
 c1 = 1500
 
-## Load and decimate
-
+print('\n'*20)
 print('Select a wav file with the signal you want to analyze')
 print('This wav file should be a small data snippet (say, a few seconds) that contains the relevant signal')
 print('The was file must contain a single channel')
@@ -59,10 +53,10 @@ print('You should have run the code a_look_at_data.m only once and you should kn
 print('adequate value of decimation rate and window length to compute spectrograms')
 print('Now select the wav file')
 print('(for the CSS provided in this tutorial, select the css_ready_to_warp.wav file)')
-
+input('Press ENTER to continue')
 path = os.getcwd() + '/css_ready_to_warp.wav'
 fs0, y0 = siw.read(path)
-# f = wave.open(os.path.join(path,path),'rb')
+
 
 if np.ndim(y0) != 1:
     raise ValueError('The input wav file must contain a single channel')
@@ -70,7 +64,7 @@ if np.ndim(y0) != 1:
 y0 = y0 - np.mean(y0)
 N0 = len(y0)
 
-print('')
+print('\n'*20)
 print('Do you want to decimate your signal?')
 print('If you do not want to decimate your signal type 1')
 print('If you want to decimate your signal, enter the decimation rate')
@@ -100,26 +94,22 @@ if (N_window % 2) == 0:
     N_window = N_window + 1  ## force odd numbers
 
 
-## 3. Plot spectrogram and time origin selection
+#--------------------------------------------------------------------------------------
+# 3. Plot spectrogram and time origin selection
 
 N = len(s_t)
-
 redo_dt = 0
 
 while redo_dt == 0:
 
-    a = s_t[np.newaxis, :]
     b = np.arange(1, N + 1)
-    b = b[np.newaxis, :]
     h = np.hamming(N_window)
-    h = h[:, np.newaxis]
-
-    tfr = tfrstft(a, b, NFFT, h)
+    tfr = tfrstft(s_t, b, NFFT, h)
     spectro = np.abs(tfr) ** 2
 
     time = np.arange(0, N) / fs
     freq = np.arange(0, NFFT) * fs / NFFT
-
+    print('\n'* 20)
     print('This is the spectrogram of your signal')
     print('Click twice on the spectrogram :')
     print('   * the first defines the time origin for warping')
@@ -135,20 +125,17 @@ while redo_dt == 0:
     else:
         plt.imshow(spectro, extent=[time[0], time[-1], freq[0], freq[-1]], aspect='auto', origin='low')
 
-
     plt.ylim([0, fs / 2])
     plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     plt.title('Spectrogram')
     plt.show(block=False)
 
-
     interactive(True)
     pts = plt.ginput(2)
     input('Pres ENTER to continue and plot the result')
     c = np.array(pts)
     ttt = c[:, 0]
-
 
     time_origin = ttt[0]
     time_t_dec = np.abs(time - time_origin)
@@ -179,23 +166,19 @@ while redo_dt == 0:
 
     M = len(s_w)
 
-    ## 4. Plot spectrograms
+    # 4. Plot spectrograms
 
-    ### Original signal
+    # Original signal
 
     b = np.arange(1, N_ok + 1)
-    b = b[np.newaxis, :]
     h = np.hamming(N_window)
-    h = h[:, np.newaxis]
     tfr = tfrstft(s_ok_1, b, NFFT, h)
     spectro = abs(tfr) ** 2
 
-    ### Warped signal
+    # Warped signal
     wind = np.hamming(N_window_w)
     wind = wind / np.linalg.norm(wind)
-    wind = wind[:, np.newaxis]
     b = np.arange(1, M + 1)
-    b = b[np.newaxis, :]
     tfr_w = tfrstft(s_w, b, NFFT, wind)
     spectro_w = abs(tfr_w) ** 2
 
@@ -204,11 +187,10 @@ while redo_dt == 0:
     freq_w = np.arange(0, fs_w - fs_w / NFFT + fs_w / NFFT, fs_w / NFFT)
 
     # Figure
-
+    print('\n' * 20 )
     print('The left panel shows the spectrogram of the original signal with the chosen time origin')
     print('The right panel shows the corresponding warped signal')
     print('')
-    print('Close the figure to continue')
 
     plt.figure()
     plt.subplot(121)
@@ -237,7 +219,7 @@ while redo_dt == 0:
     plt.xlabel('Warped time (sec)')
     plt.ylabel('Corresponding warped frequency (Hz)')
     plt.title('Corresponding warped signal')
-    plt.show(block='True')
+    plt.show(block=False)
 
     print('Type 0 if you want to redo the time origin selection')
     redo_dt = input('or type 1 if you want to proceed with modal filtering ')
@@ -249,8 +231,9 @@ while redo_dt == 0:
         redo_dt = int(redo_dt)
 
 
-## 5. Filtering
-
+# --------------------------------------------------------------------------------------
+# 5. Filtering
+print('\n' * 20)
 print('How many mode do you want to filter? ')
 print('For the CSS provided in the tutorial, you can easily do 9, but if you want to try')
 Nmodes = input('localization, then do not do more than 4;')
@@ -267,17 +250,12 @@ print('WARNING: Maybe you have to modify the function ROI.py line 2024, ')
 print ( 'it will depend on the size of your data set')
 print( ' (in this case we have change 1000 by 3000 because our data set is bigger than 1000 pts)')
 
-## selection the spectro_w part to mask
+# selection the spectro_w part to mask
 spectro_w_1=spectro_w[0:400,:]
 spectro_w_1=np.transpose(spectro_w_1)
 
-
-
 # Filtering will be done by hand using the pyqtgraph ROI tool.
 # See pyqtgraph help for more information
-
-
-
 
 modes=np.zeros((N_ok,Nmodes))
 tm=np.zeros((NFFT,Nmodes))
@@ -377,26 +355,24 @@ for i in range (Nmodes):
     modes[:, i] = mode[:, 0]
 
 
-    ## Verification
+    # Verification
     a = hilbert(mode)
     b = np.arange(1, N_ok + 1)
-    b = b[np.newaxis, :]
     h = np.hamming(N_window)
-    h = h[:, np.newaxis]
     mode_stft = tfrstft(a, b, NFFT, h)
     mode_spectro = abs(mode_stft) ** 2
     tm_1, D2 = momftfr(mode_spectro, 0, N_ok, time_ok)
     tm[:, i] = tm_1[:, 0]
 
 
-
 print('End of filtering')
 
-## 6. Verification
-
+#--------------------------------------------------------------------------------------
+# 6. Verification
+print('\n' * 20)
 print('The red lines are the estimated dispersion curves.')
 print(' ')
-print('Close the figure to continue')
+
 
 plt.figure()
 
@@ -414,8 +390,10 @@ plt.title('Spectrogram and estimated dispersion curve')
 for i in range (Nmodes):
     plt.plot(tm[:, i], freq[:], 'r')
 
-plt.show(block=True)
+plt.show(block=False)
+input('Press ENTER to continue')
 
+print('\n' * 20)
 print('Now let us restrict them to a frequency band where they are ok')
 print('You will have to enter the min/max frequency for each dispersion curves')
 print('(for every mode, choose the widest frequency band over which the dispersion curve estimation looks correct)')
@@ -438,9 +416,8 @@ for i in range(Nmodes):
     tm_ok[0:poss[0, 0], i] = np.nan
     tm_ok[poss[0, -1]:, i] = np.nan
 
-print('This is the spectrogram with your best guess of the dispersion curves.')
-print(' ')
-print('Close the figure to continue')
+
+
 
 plt.figure()
 
@@ -452,6 +429,7 @@ else:
     plot = spectro
     plt.imshow(plot, extent=[time_ok[0], time_ok[-1], freq[0], freq[-1]], aspect='auto', origin='low')
 
+print('\n' * 20)
 print('This is the spectrogram with your best guess of the dispersion curves.')
 print('If you are happy with the result, the dispersion curves will be formatted and saved for localization')
 print('If you are unhappy with the result, you will have to rerun the code')
@@ -463,11 +441,12 @@ plt.title('Spectrogram and estimated dispersion curves')
 for i in range(Nmodes):
     plt.plot(tm_ok[:, i], freq[:], 'r')
 
-plt.show(block=True)
+plt.show(block=False)
+input('Press ENTER to continue')
 
-
-## 8. End
-
+#------------------------------------------------------------------------
+# 8. End
+print('\n' * 20)
 save_data = input('Enter 1 to save the dispersion curve, or 0 to quit ')
 
 if len(save_data) == 0:
@@ -484,6 +463,7 @@ if save_data == 0:
 else:
     fmin_data = np.min(fmin)
     fmax_data = np.max(fmax)
+    print('\n' * 20)
     print(['The estimated dispersion curves go from fmin=' + str(fmin_data) + ' to fmax=' + str(
         fmax_data) + ' Hz and will be saved only between these 2 values'])
     print(
@@ -515,6 +495,7 @@ else:
                               'freq': freq, 'spectro': spectro, 'modes': modes, 'fs': fs, 'tm_ok': tm_ok, 's_ok': s_ok,
                               't_dec': t_dec})
 
+    print('\n' * 20)
     print('The data have been saved in a mat file with the same name than the')
     print('original wavefile, follow by the current date and time')
     print('The mat file is located in the same folder than the original wav file')

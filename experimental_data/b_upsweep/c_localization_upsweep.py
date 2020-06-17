@@ -1,41 +1,49 @@
+# Warping tutorial
+# c_localization, upsweep
+
+# May 2020
+# Eva Chamorro - Daniel Zitterbart - Julien Bonnel
+
+#--------------------------------------------------------------------------------------
+## 1. Import packages
+
 import os
-#os.chdir("/Users/evachamorro/Desktop/stage_M2/biblio/basic_stuff/warping_tuto/supplementary_material/python code/functions")
-#**Put here the directory where you have the file with your function**
+import sys
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.io as sio
 from datetime import date
+sys.path.insert(0, os.path.dirname(os.getcwd())+'/subroutines') #**Put here the directory where you have the file with your function**
 from pekeris import *
 from hamilton import *
 from datetime import date
 
-#os.chdir('/Users/evachamorro/Desktop/stage_M2/biblio/basic_stuff/warping_tuto/supplementary_material/python code/experimental_data/b_fm_upsweep')
-##**Put here the directory where you were working**
-
+#--------------------------------------------------------------------------------------
 ## 2. Parameters for localization
 
-#### First, all the parameters that we think we know
+# First, all the parameters that we think we know
 D = 55  ### water depth
 # c1=1442 ### sound speed in wat
 c1 = 1500
 rho1 = 1  ### density in water
 
-#### now the search grids for the parameters to be estimated
+# now the search grids for the parameters to be estimated
 r_ = np.arange(10000, 20100, 100)
 c2_ = np.arange(1550, 1810, 10)
-### NB: dt values should be roughly between rmin/c1 and rmax/c1. One can start with wide
-###     search bounds and coarse steps for dt, and gradually narrow the bounds and decrease the steps.
+# NB: dt values should be roughly between rmin/c1 and rmax/c1. One can start with wide
+#     search bounds and coarse steps for dt, and gradually narrow the bounds and decrease the steps.
 
+#--------------------------------------------------------------------------------------
 ## 3. Load data
 
+print('\n' * 20)
 print('Select the .mat file with the dispersion curves you want to use for localization')
 print('(it has been created by b_filtering.m)')
 print('NB: this code is only to localize impulsive sources. Do not use it for sources that are not perfect impulses')
 
 today = date.today()
-dat = sio.loadmat(os.getcwd()+'/upsweep_modes_20200609T155921'+ '.mat')
-#dat = sio.loadmat(os.getcwd()+ '/upsweep_modes_' + str(today)+ '.mat')
+dat = sio.loadmat(os.getcwd()+ '/upsweep_modes_' + str(today)+ '.mat')
 
 data=dat['data']
 freq_data=dat['freq_data']
@@ -59,6 +67,7 @@ plt.grid()
 plt.title('Dispersion curves')
 plt.show(block=True)
 
+#--------------------------------------------------------------------------------------
 ## 4. Compute replicas
 
 Nf=len(freq_data[0,:])
@@ -86,9 +95,10 @@ for cc in (np.arange(0, Nc)):
 print('Replicas computed!')
 print('Continue')
 
+#--------------------------------------------------------------------------------------
 ## 5. Localization
 
-##### we need common frequencies between modes. Let us verify the data
+# we need common frequencies between modes. Let us verify the data
 flag_data = 0
 for mm in np.arange(0, Nm - 1):
     data_ok = data[:, mm + 1] - data[:, mm]
@@ -141,7 +151,7 @@ else:  ## there are common frequencies and we can proceed
     print('Continue to plot results')
 
 
-
+#--------------------------------------------------------------------------------------
 ## 6. Plot results
 
 rep_est = np.zeros((Nf, Nm - 1))

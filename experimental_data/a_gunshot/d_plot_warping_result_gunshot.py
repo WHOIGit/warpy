@@ -1,9 +1,10 @@
-## Warping tutorial
-#### d_plot_warping_result
+# Warping tutorial
+# d_plot_warping_result
 
-##### May 2020
-###### Eva Chamorro - Daniel Zitterbart - Julien Bonnel
+# May 2020
+# Eva Chamorro - Daniel Zitterbart - Julien Bonnel
 
+#--------------------------------------------------------------------------------------
 ## 1. Import packages
 
 import os
@@ -14,22 +15,22 @@ from datetime import date
 import warnings
 warnings.filterwarnings('ignore')
 
-
+#--------------------------------------------------------------------------------------
 ## 2. Load data
 
-
-#### Option to plot spectrogram in dB vs linear scale
+# Option to plot spectrogram in dB vs linear scale
 plot_in_dB=1  ### 1 to plot in dB, or 0 to plot in linear scale
 
-## Load data
+# Load data
+print('\n' * 20)
 print('This code is to plot warping results')
 print('Select the .mat file with the results you want to plot')
 print('(this .mat file has been created by b_filtering.m)')
 input('Press ENTER to continue')
 
 today = date.today()
-#dat = sio.loadmat(os.getcwd()+ '/modes_' + str(today)+ '.mat')
-dat = sio.loadmat(os.getcwd()+ '/gunshot_modes_2020-06-08.mat')
+dat = sio.loadmat(os.getcwd()+ '/gunshot_modes_' + str(today)+ '.mat')
+
 
 data=dat['data']
 fmax_plot=dat['fmax_plot']
@@ -45,6 +46,8 @@ mode_pts=dat['mode_pts']
 mode_pts=mode_pts[0]
 Nmodes=dat['Nmode']
 
+
+#--------------------------------------------------------------------------------------
 ## 3. Spectroprint(' ')
 print('\n' * 20)
 print('The left panel shows the spectrogram of the original signal and the estimated dispersion curves.')
@@ -86,9 +89,8 @@ plt.xlabel('Warped time (sec)')
 plt.ylabel('Corresponding warped frequency (Hz)')
 plt.title('Corresponding warped signal')
 
-## create the mask points to plot on the warped signal
 
-
+# create the mask points to plot on the warped signal
 for i in range(len(data[0, :])):
     pts_x1 = []
     pts_y1 = []
@@ -105,7 +107,7 @@ for i in range(len(data[0, :])):
 
     plt.plot(pts_x1, pts_y1, color=c[i])
 
-plt.show(block='True')
-
+plt.show(block=False)
+input('press ENTER to exit the code')
 print('')
 print('END')

@@ -9,39 +9,33 @@
 
 
 import os
-#os.chdir("/Users/evachamorro/Desktop/stage_M2/biblio/basic_stuff/warping_tuto/supplementary_material/python code/functions")
-#**Put here the directory where you have the file with your function**
+import sys
 import wave
-import matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-matplotlib.use('TkAgg')
 from matplotlib import interactive
-from matplotlib.path import Path
 import scipy.io as sio
 import scipy.io.wavfile as siw
 import scipy.signal as sig
 from scipy.signal import hilbert
 from scipy import interpolate
 from datetime import date
+sys.path.insert(0, os.path.dirname(os.getcwd())+'/subroutines') #**Put here the directory where you have the file with your function**
 from warping_functions import *
 from time_frequency_analysis_functions import *
 from filter import *
 
-#import warnings
-#warnings.filterwarnings('ignore')
+import warnings
+warnings.filterwarnings('ignore')
 
-#os.chdir('/Users/evachamorro/Desktop/stage_M2/biblio/basic_stuff/warping_tuto/supplementary_material/python code/experimental_data/a_impulsive_source_gunshot')
-##**Put here the directory where you were working**
+'NOTE: This code has to be run in the Terminal'
 
-
+#--------------------------------------------------------------------------------------
 ## 2. Load and decimate
 
 
-##### Option to plot spectrogram in dB vs linear scale
+# Option to plot spectrogram in dB vs linear scale
 plot_in_dB = 1  ### 1 to plot in dB, or 0 to plot in linear scale
 
-##### Parameters for computing/plotting the spectrograms
+# Parameters for computing/plotting the spectrograms
 # These should be good default values for the gunshot provided in this tutorial
 # You will likely have to change them for other data
 NFFT = 2048  ### fft size for all spectrogram computation
@@ -49,12 +43,12 @@ NFFT = 2048  ### fft size for all spectrogram computation
 N_window_w = 301  ###length of the sliding window for the spectrogram of the warped signal
 fmax_plot = 70  ### max frequency for the plot of the spectrogram of the warped signal
 
-#### Parameters for warping
+# Parameters for warping
 # You can keep these default value or change them if you have reasons to know better
 r = 10000
 c1 = 1500
 
-## Load and decimate
+
 print('Select a wav file with the signal you want to analyze')
 print('This wav file should be a small data snippet (say, a few seconds) that contains the relevant signal')
 print('The was file must contain a single channel')
@@ -104,23 +98,19 @@ else:
 if (N_window % 2) == 0:
     N_window = N_window + 1  ## force odd numbers
 
+
+#--------------------------------------------------------------------------------------
 ## 3. Plot spectrogram and time origin selection
 
 N = len(s_t)
-
-
-
 redo_dt = 0
 
 while redo_dt == 0:
 
-    a = s_t[np.newaxis, :]
     b = np.arange(1, N + 1)
-    b = b[np.newaxis, :]
     h = np.hamming(N_window)
-    h = h[:, np.newaxis]
 
-    tfr = tfrstft(a, b, NFFT, h)
+    tfr = tfrstft(s_t, b, NFFT, h)
     spectro = np.abs(tfr) ** 2
 
     time = np.arange(0, N) / fs
@@ -178,31 +168,26 @@ while redo_dt == 0:
     time_ok = np.arange(0, N_ok) / fs
 
     # The warped signal will be s_w
-    s_ok_1 = s_ok[np.newaxis, :]
     fs_1 = np.array([[fs]])
     r_1 = np.array([[r]])
     c1_1 = np.array([[c1]])
-    [s_w, fs_w] = warp_temp_exa(s_ok_1, fs_1, r_1, c1_1)
+    [s_w, fs_w] = warp_temp_exa(s_ok, fs_1, r_1, c1_1)
 
     M = len(s_w)
 
-    ## 4. Plot spectrograms
+    # 4. Plot spectrograms
 
-    ### Original signal
+    # Original signal
 
     b = np.arange(1, N_ok + 1)
-    b = b[np.newaxis, :]
     h = np.hamming(N_window)
-    h = h[:, np.newaxis]
-    tfr = tfrstft(s_ok_1, b, NFFT, h)
+    tfr = tfrstft(s_ok, b, NFFT, h)
     spectro = abs(tfr) ** 2
 
-    ### Warped signal
+    # Warped signal
     wind = np.hamming(N_window_w)
     wind = wind / np.linalg.norm(wind)
-    wind = wind[:, np.newaxis]
     b = np.arange(1, M + 1)
-    b = b[np.newaxis, :]
     tfr_w = tfrstft(s_w, b, NFFT, wind)
     spectro_w = abs(tfr_w) ** 2
 
@@ -215,7 +200,7 @@ while redo_dt == 0:
     print('The left panel shows the spectrogram of the original signal with the chosen time origin')
     print('The right panel shows the corresponding warped signal')
     print('')
-    print('Close the figures to continue')
+
 
     plt.figure()
     plt.subplot(121)
@@ -244,7 +229,8 @@ while redo_dt == 0:
     plt.xlabel('Warped time (sec)')
     plt.ylabel('Corresponding warped frequency (Hz)')
     plt.title('Corresponding warped signal')
-    plt.show(block='True')
+    plt.show(block=False)
+    input('Press ENTER to continue')
 
 
     print('\n' * 20)
@@ -260,7 +246,10 @@ while redo_dt == 0:
 
     print('\n' * 20)
 
+
+#--------------------------------------------------------------------------------------
 ## 5. Filtering
+
 print('\n' * 20)
 print('How many mode do you want to filter? ')
 Nmodes=input('(for the gunshot provided in the tutorial, enter 4); ');
@@ -270,7 +259,7 @@ else:
     Nmodes=int(Nmodes)
 
 
-## selection the spectro_w part to mask
+# selection the spectro_w part to mask
 spectro_w_1=spectro_w[0:400,:]
 spectro_w_1=np.transpose(spectro_w_1)
 time_w_1=time_w
@@ -291,7 +280,7 @@ mode_pts=[]
 
 def pol(arr):
 
-    ## create GUI
+    # create GUI
     app = QtGui.QApplication([])
     w = pg.GraphicsWindow(size=(1000, 800), border=True)
     w.setWindowTitle('pyqtgraph: Filtering')
@@ -334,7 +323,7 @@ def pol(arr):
         roi.sigRegionChanged.connect(update)
         v1a.addItem(roi)
 
-    ## Start Qt event loop unless running in interactive mode or using pyside.
+    # Start Qt event loop unless running in interactive mode or using pyside.
     if __name__ == '__main__':
         import sys
 
@@ -364,7 +353,7 @@ for i in range (Nmodes):
     masque_2 = np.zeros_like(spectro_w[400:, :])
     masque = np.concatenate((mask_ini, masque_2), axis=0)
 
-    #save the mask vertices
+    # save the mask vertices
     vertices=np.array(pts)
     mode_pts.append(vertices)
 
@@ -381,12 +370,10 @@ for i in range (Nmodes):
     modes[:, i] = mode[:, 0]
 
 
-    ## Verification
+    # Verification
     a = hilbert(mode)
     b = np.arange(1, N_ok + 1)
-    b = b[np.newaxis, :]
     h = np.hamming(N_window)
-    h = h[:, np.newaxis]
     mode_stft = tfrstft(a, b, NFFT, h)
     mode_spectro = abs(mode_stft) ** 2
     tm_1, D2 = momftfr(mode_spectro, 0, N_ok, time_ok)
@@ -396,12 +383,11 @@ for i in range (Nmodes):
 print('\n' * 20)
 print('End of filtering')
 
-
+#--------------------------------------------------------------------------------------
 ## 6. Verification
 
 print('The red lines are the estimated dispersion curves.')
 print(' ')
-print('Close the figure to continue and restrict them to a frequency band')
 
 plt.figure()
 
@@ -417,7 +403,8 @@ plt.title('Spectrogram and estimated dispersion curve')
 for i in range (Nmodes):
     plt.plot(tm[:, i], freq[:], 'r')
 
-plt.show(block='True')
+plt.show(block=False)
+input('Press ENTER to continue and restrict them to a frequency band')
 
 print('\n' * 20)
 print('Now let us restrict them to a frequency band where they are ok')
@@ -425,6 +412,7 @@ print('You will have to enter the min/max frequency for each dispersion curves')
 print('(for every mode, choose the widest frequency band over which the dispersion curve estimation looks correct)')
 
 
+#--------------------------------------------------------------------------------------
 ## 7. Restrict to frequency band of interest
 
 fmin = np.zeros((Nmodes))
@@ -456,7 +444,7 @@ else:
 print('This is the spectrogram with your best guess of the dispersion curves.')
 print('If you are happy with the result, the dispersion curves will be formatted and saved for localization')
 print('If you are unhappy with the result, you will have to rerun the code')
-print('Close the figure to continue')
+
 
 plt.ylim([0, fs / 2])
 plt.xlabel('Time (sec)')
@@ -466,9 +454,11 @@ plt.title('Spectrogram and estimated dispersion curves')
 for i in range(Nmodes):
     plt.plot(tm_ok[:, i], freq[:], 'r')
 
-plt.show(block='True')
+plt.show(block=False)
+input('Press ENTER to continue')
 
 
+#--------------------------------------------------------------------------------------
 ## 8. End
 
 save_data = input('Enter 1 to save the dispersion curve, or 0 to quit ')
